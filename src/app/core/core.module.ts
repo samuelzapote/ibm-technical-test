@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { UIShellModule } from 'carbon-components-angular';
+
 import { HeaderComponent } from './hoc/header/header.component';
 import { LayoutComponent } from './hoc/layout/layout.component';
 
@@ -11,6 +13,7 @@ import { LayoutComponent } from './hoc/layout/layout.component';
 	],
 	exports: [
 		LayoutComponent,
+		UIShellModule,
 	],
 })
 export class CoreModule { }
