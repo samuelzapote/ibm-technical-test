@@ -1,4 +1,4 @@
-import { Component, HostBinding, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
 	selector: 'app-layout',
@@ -6,11 +6,9 @@ import { Component, HostBinding, OnInit } from '@angular/core';
 	styleUrls: ['./layout.component.scss']
 })
 export class LayoutComponent implements OnInit {
-	@HostBinding('class.bx--header') headerClass = true;
 
 	constructor() { }
 
-	ngOnInit(): void {
-	}
+	ngOnInit(): void { }
 
 }
