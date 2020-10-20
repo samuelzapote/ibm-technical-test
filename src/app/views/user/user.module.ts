@@ -16,7 +16,8 @@ import { UserComponent } from './user.component';
 import { ProfileEditDialogComponent } from './profile-edit-dialog/profile-edit-dialog.component';
 
 @NgModule({
-	declarations: [UserComponent, ProfileEditDialogComponent],
+	declarations: [ UserComponent, ProfileEditDialogComponent],
+	entryComponents: [ ProfileEditDialogComponent ],
 	imports: [
 		CommonModule,
 		FormsModule,
