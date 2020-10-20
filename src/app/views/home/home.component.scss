@@ -12,3 +12,11 @@
 .main-table {
 	width: 100%;
 }
+
+tr.table-row:hover {
+	background: whitesmoke;
+}
+
+tr.table-row:active {
+	background: #efefef;
+}

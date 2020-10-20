@@ -6,11 +6,29 @@
 
 .header {
 	display: block;
-	height: 10%;
+	height: 5%;
 	width: 100%;
 }
 
 .content {
 	flex-grow: 1;
-	padding: 0 2rem;
+	margin: 0 auto;
+	padding: 0 10%;
+	transition-delay: .25s;
+	transition-duration: .5s;
+	transition-property: width;
+	transition-timing-function: ease-in-out;
+	width: 80%;
+}
+
+@media only screen and (min-width: 768px) {
+	.content {
+		width: 70%;
+	}
+}
+
+@media only screen and (min-width: 992px) {
+	.content {
+		width: 60%;
+	}
 }
