@@ -23,6 +23,7 @@ export class UserComponent implements OnInit, OnDestroy {
 	public bioFields: ProfileField[];
 	private defaultAvatarUrl = DEFAULT_AVATAR_URL;
 	private usersSubscription: Subscription;
+	private dialogRefSubscription: Subscription;
 
 	constructor(
 		public profileEditDialog: MatDialog,
@@ -45,6 +46,9 @@ export class UserComponent implements OnInit, OnDestroy {
 
 	public ngOnDestroy(): void {
 		this.usersSubscription.unsubscribe();
+		if (this.dialogRefSubscription) {
+			this.dialogRefSubscription.unsubscribe();
+		}
 	}
 
 	public getUserAvatarStyle(avatarUrl: string): string {
@@ -58,7 +62,7 @@ export class UserComponent implements OnInit, OnDestroy {
 	public onEditProfile(): void {
 		const dialogRef = this.profileEditDialog.open(ProfileEditDialogComponent, { panelClass: 'profile-edit-dialog', data: this.user });
 
-		dialogRef.afterClosed()
+		this.dialogRefSubscription = dialogRef.afterClosed()
 			.subscribe(updatedValues => {
 				if (updatedValues) {
 					this.usersService.updateLocalUserData({ uid: this.user.uid, ...updatedValues });

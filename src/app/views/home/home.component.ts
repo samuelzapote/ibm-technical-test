@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { Subscription } from 'rxjs';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
+import { Subscription } from 'rxjs';
 
 import { UsersService } from 'src/app/common/services/users.service';
 import { GithubUser } from 'src/app/common/models/github-user.model';
@@ -60,15 +60,14 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 		this.foundUsersSubscription.unsubscribe();
 	}
 
-	public onUserSearch(query: string): void {
+	public async onUserSearch(query: string): Promise<void> {
 		this.searching = true;
-		this.usersService
-			.searchUsersAndAdd(query)
-				.then(() => { this.searching = false; })
-					.catch((error: { statusText: string; }) => {
-						this.searching = false;
-						this.triggerErrorSnackbar(error);
-					});
+		this.usersService.searchUsersAndAdd(query)
+			.then(() => { this.searching = false; })
+			.catch((error: { statusText: string; }) => {
+				this.searching = false;
+				this.triggerErrorSnackbar(error);
+			});
 	}
 
 	public onUserClicked(user: GithubUser): void {
