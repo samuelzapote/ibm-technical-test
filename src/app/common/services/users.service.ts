@@ -11,7 +11,7 @@ import { GithubUser } from 'src/app/common/models/github-user.model';
 export class UsersService {
 	private foundUsersBehaviorSubject: BehaviorSubject<GithubUser[]> = new BehaviorSubject([]);
 
-	get foundUsers(): Observable<GithubUser[]> {
+	get foundUsersObservable(): Observable<GithubUser[]> {
 		return this.foundUsersBehaviorSubject.asObservable();
 	}
 

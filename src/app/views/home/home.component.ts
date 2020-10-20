@@ -46,7 +46,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 	private foundUsersSubscription: Subscription;
 
 	constructor(private usersService: UsersService, private snackBar: MatSnackBar, private router: Router) {
-		this.foundUsersSubscription = this.usersService.foundUsers
+		this.foundUsersSubscription = this.usersService.foundUsersObservable
 			.subscribe(users => { this.dataSource.data = users; });
 	}
 

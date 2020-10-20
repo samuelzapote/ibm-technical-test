@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+
 import { BehaviorSubject } from 'rxjs';
 
 import { GithubUser } from 'src/app/common/models/github-user.model';
@@ -39,7 +40,6 @@ export class GithubService {
 	private baseApiUrl: string = BASE_API_URL;
 	private currentPageBehaviorSubject: BehaviorSubject<number> = new BehaviorSubject(1);
 	private currentQueryBehaviorSubject: BehaviorSubject<string> = new BehaviorSubject('');
-	private currentPageBackup = 1;
 
 	get currentPage(): number {
 		return this.currentPageBehaviorSubject.value;

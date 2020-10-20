@@ -31,7 +31,7 @@ export class UserComponent implements OnInit, OnDestroy {
 		private router: Router,
 		private usersService: UsersService) {
 		const uid = +this.route.snapshot.paramMap.get('uid');
-		this.usersSubscription = this.usersService.foundUsers
+		this.usersSubscription = this.usersService.foundUsersObservable
 			.subscribe(users => {
 				this.user = users.find(u => u.uid === uid);
 				if (!uid || !this.user) {
