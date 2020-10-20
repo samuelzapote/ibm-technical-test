@@ -42,7 +42,14 @@ export class UsersService {
 					};
 					return newUser;
 				}
+				return oldUser;
 			});
 		this.foundUsersBehaviorSubject.next(updatedFoundUsers);
+	}
+
+	public async handleLastPageLoad(): Promise<void> {
+		const extraGithubUsers = await this.githubService.loadNextPageOfUsers();
+		const updatedGithubUsers: GithubUser[] = this.foundUsersBehaviorSubject.value.concat(extraGithubUsers);
+		this.foundUsersBehaviorSubject.next(updatedGithubUsers);
 	}
 }

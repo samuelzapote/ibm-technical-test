@@ -14,6 +14,14 @@ interface TableColumn {
 	name: string;
 }
 
+interface PageChangeEvent {
+	length: number;
+	pageIndex: number;
+	pageSize: number;
+	previousPageIndex: number;
+}
+
+
 const COLUMNS_REG: TableColumn[] = [
 	{ label: 'Name', name: 'name' },
 	{ label: 'Username', name: 'username' },
@@ -65,6 +73,26 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
 	public onUserClicked(user: GithubUser): void {
 		this.router.navigate([`users/${user.uid}`]);
+	}
+
+	public onPageChange(e: PageChangeEvent): void {
+		if (this.isOnTheLastPage(e)) {
+			this.searching = true;
+			this.usersService.handleLastPageLoad()
+				.then(() => {
+					this.searching = false;
+				})
+				.catch((error: { statusText: string; }) => {
+					this.searching = false;
+					this.triggerErrorSnackbar(error);
+				});
+		}
+	}
+
+	private isOnTheLastPage(event: PageChangeEvent): boolean {
+		const pages = event.length / event.pageSize;
+		const isLastPage = (event.pageIndex + 1) === pages;
+		return isLastPage;
 	}
 
 	private triggerErrorSnackbar(error: { statusText: string; }): void {

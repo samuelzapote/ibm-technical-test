@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
 import { GithubUser } from 'src/app/common/models/github-user.model';
 import { environment } from 'src/environments/environment';
@@ -36,12 +37,27 @@ const BASE_API_URL = environment.BASE_GITHUB_API_URL;
 })
 export class GithubService {
 	private baseApiUrl: string = BASE_API_URL;
+	private currentPageBehaviorSubject: BehaviorSubject<number> = new BehaviorSubject(1);
+	private currentQueryBehaviorSubject: BehaviorSubject<string> = new BehaviorSubject('');
+	private currentPageBackup = 1;
+
+	get currentPage(): number {
+		return this.currentPageBehaviorSubject.value;
+	}
+
+	get currentQuery(): string {
+		return this.currentQueryBehaviorSubject.value;
+	}
 
 	constructor(private http: HttpClient) { }
 
-	public async searchAndParseUsers(query: string): Promise<GithubUser[]> {
-		const url = `${this.baseApiUrl}/search/users?q=${query}&per_page=20`;
-		const result: UsersSearchResult = await this.http.get(url).toPromise().catch(e => console.error(e)) as UsersSearchResult;
+	public async searchAndParseUsers(query: string, nextPage?: number): Promise<GithubUser[]> {
+		if (this.currentQuery !== query) {
+			this.currentQueryBehaviorSubject.next(query);
+			this.currentPageBehaviorSubject.next(1);
+		}
+		const url = `${this.baseApiUrl}/search/users?q=${this.currentQuery}&per_page=20&page=${nextPage ? nextPage : this.currentPage}`;
+		const result: UsersSearchResult = await this.http.get(url).toPromise() as UsersSearchResult;
 		let parsedFoundUsers: GithubUser[] = [];
 
 		parsedFoundUsers = await Promise.all(
@@ -66,7 +82,16 @@ export class GithubService {
 			)
 		);
 
+		if (nextPage) {
+			this.currentPageBehaviorSubject.next(nextPage);
+		}
+
 		return parsedFoundUsers;
+	}
+
+	public loadNextPageOfUsers(): Promise<GithubUser[]> {
+		const nextPage: number = this.currentPage + 1;
+		return this.searchAndParseUsers(this.currentQuery, nextPage);
 	}
 
 	private getUserByUsername(username: string): Promise<PartialRawUserData> {
