@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 @Component({
 	selector: 'app-user-search-field',
 	templateUrl: './user-search-field.component.html',
-	styleUrls: ['./user-search-field.component.scss']
+	styleUrls: ['./user-search-field.component.scss'],
 })
 export class UserSearchFieldComponent implements OnInit {
 	@Output() onUserSearchReq: EventEmitter<string> = new EventEmitter();
