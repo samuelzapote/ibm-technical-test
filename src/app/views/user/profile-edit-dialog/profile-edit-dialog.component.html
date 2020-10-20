@@ -1,0 +1,14 @@
+<form class="profile-edit-form" [formGroup]="profileEditForm">
+	<mat-form-field *ngFor="let field of profileFields" appearance="outline">
+		<mat-label>{{field.name | titlecase}}</mat-label>
+		<input matInput [formControlName]="field.name" [pattern]="field.pattern" [placeholder]="field.name | titlecase">
+	</mat-form-field>
+	<button
+		mat-raised-button
+		class="submit-button"
+		color="primary"
+		[mat-dialog-close]="profileEditForm.value"
+		[disabled]="profileEditForm.invalid || !profileEditForm.dirty">
+		Save
+	</button>
+</form>

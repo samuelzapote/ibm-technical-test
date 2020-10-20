@@ -1,7 +1,7 @@
 <form [formGroup]="userSearchForm" (ngSubmit)="onSubmit(userSearchForm)">
 	<mat-form-field class="search-input" appearance="outline">
 		<mat-label>User Search</mat-label>
-		<input matInput formControlName="query" pattern="[a-zA-Z ]*" placeholder="markzuc">
+		<input matInput formControlName="query" pattern="[a-zA-Z ]*" placeholder="markzuc" aria-label="Github User Search Input">
 		<mat-icon matSuffix>search</mat-icon>
 		<mat-hint>Search for a Github user</mat-hint>
 	</mat-form-field>

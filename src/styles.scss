@@ -36,3 +36,20 @@ $technical-test-theme: mat-light-theme((
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.profile-edit-dialog {
+	margin-top: 2%;
+	transition-delay: .1s;
+	transition-duration: .25s;
+	transition-property: width;
+	transition-timing-function: ease-in-out;
+	width: 80%;
+}
+
+@media only screen and (min-width: 768px) {
+	.profile-edit-dialog { width: 60%; }
+}
+
+@media only screen and (min-width: 992px) {
+	.profile-edit-dialog { width: 40%; }
+}

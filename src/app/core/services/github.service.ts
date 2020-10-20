@@ -16,6 +16,7 @@ interface UsersSearchResult {
 }
 
 interface PartialRawUserData {
+	id: number;
 	name: string;
 	login: string;
 	public_repos: number;
@@ -39,15 +40,16 @@ export class GithubService {
 	constructor(private http: HttpClient) { }
 
 	public async searchAndParseUsers(query: string): Promise<GithubUser[]> {
-		const url = `${this.baseApiUrl}/search/users?q=${query}&per_page=100`;
-		const result: UsersSearchResult = await this.http.get(url).toPromise().catch((e) => console.error(e)) as UsersSearchResult;
+		const url = `${this.baseApiUrl}/search/users?q=${query}&per_page=20`;
+		const result: UsersSearchResult = await this.http.get(url).toPromise().catch(e => console.error(e)) as UsersSearchResult;
 		let parsedFoundUsers: GithubUser[] = [];
 
 		parsedFoundUsers = await Promise.all(
 			result.items.map(
 				async meta => {
-					const userData = await this.getUserByUsername(meta.login);
+					const userData: PartialRawUserData = await this.getUserByUsername(meta.login);
 					const githubUser: GithubUser = {
+						uid: userData.id,
 						name: userData.name,
 						username: userData.login,
 						repos: userData.public_repos,

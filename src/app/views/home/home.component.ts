@@ -1,9 +1,10 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
+
+import { Subscription } from 'rxjs';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
-
-import { Subscription } from 'rxjs';
 
 import { UsersService } from 'src/app/common/services/users.service';
 import { GithubUser } from 'src/app/common/models/github-user.model';
@@ -37,9 +38,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 	private foundUsersSubscription: Subscription;
 
 	constructor(private usersService: UsersService, private snackBar: MatSnackBar, private router: Router) {
-		this.foundUsersSubscription =
-			this.usersService.foundUsers
-				.subscribe(users => { this.dataSource.data = users; });
+		this.foundUsersSubscription = this.usersService.foundUsers
+			.subscribe(users => { this.dataSource.data = users; });
 	}
 
 	public ngOnInit(): void { }
@@ -58,10 +58,13 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 			.searchUsersAndAdd(query)
 				.then(() => { this.searching = false; })
 					.catch((error: { statusText: string; }) => {
-						console.log(error);
 						this.searching = false;
 						this.triggerErrorSnackbar(error);
 					});
+	}
+
+	public onUserClicked(user: GithubUser): void {
+		this.router.navigate([`users/${user.uid}`]);
 	}
 
 	private triggerErrorSnackbar(error: { statusText: string; }): void {
