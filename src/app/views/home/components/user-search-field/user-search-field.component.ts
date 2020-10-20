@@ -25,4 +25,8 @@ export class UserSearchFieldComponent implements OnInit {
 			this.onUserSearchReq.emit(query);
 		}
 	}
+
+	public onClearSearch(): void {
+		this.userSearchForm.reset();
+	}
 }
