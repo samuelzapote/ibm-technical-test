@@ -10,7 +10,7 @@ interface ProfileEditField {
 }
 
 const PROFILE_FIELDS: ProfileEditField[] = [
-	{ name: 'name', pattern: '[a-zA-Z ]*' },
+	{ name: 'name', pattern: null },
 	{ name: 'username', pattern: '[a-zA-Z ]*' },
 	{ name: 'repos', pattern: '[0-9 ]*' },
 	{ name: 'followers', pattern: '[0-9 ]*' },
