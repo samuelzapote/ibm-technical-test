@@ -12,7 +12,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 
 import { HomeRoutingModule } from './home-routing.module';
-import { UsersTableServiceModule } from './services/users-table-service.module';
+import { UsersServiceModule } from 'src/app/common/services/users.service.module';
 import { HomeComponent } from './home.component';
 import { UserSearchFieldComponent } from './components/user-search-field/user-search-field.component';
 
@@ -31,7 +31,7 @@ import { UserSearchFieldComponent } from './components/user-search-field/user-se
 		MatSnackBarModule,
 		MatTableModule,
 		ReactiveFormsModule,
-		UsersTableServiceModule,
+		UsersServiceModule,
 	],
 })
 export class HomeModule { }

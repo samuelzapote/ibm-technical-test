@@ -5,7 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 
 import { Subscription } from 'rxjs';
 
-import { UsersTableService } from './services/users-table.service';
+import { UsersService } from 'src/app/common/services/users.service';
 import { GithubUser } from 'src/app/common/models/github-user.model';
 
 interface TableColumn {
@@ -36,9 +36,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 	public searchError = '';
 	private foundUsersSubscription: Subscription;
 
-	constructor(private usersTableService: UsersTableService, private snackBar: MatSnackBar) {
+	constructor(private usersService: UsersService, private snackBar: MatSnackBar, private router: Router) {
 		this.foundUsersSubscription =
-			this.usersTableService.foundUsers
+			this.usersService.foundUsers
 				.subscribe(users => { this.dataSource.data = users; });
 	}
 
@@ -54,7 +54,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
 	public onUserSearch(query: string): void {
 		this.searching = true;
-		this.usersTableService
+		this.usersService
 			.searchUsersAndAdd(query)
 				.then(() => { this.searching = false; })
 					.catch((error: { statusText: string; }) => {

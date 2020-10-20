@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 
 import { BehaviorSubject, Observable } from 'rxjs';
 
-import { UsersTableServiceModule } from './users-table-service.module';
+import { UsersServiceModule } from './users.service.module';
 import { GithubService } from 'src/app/core/services/github.service';
 import { GithubUser } from 'src/app/common/models/github-user.model';
 
 @Injectable({
-	providedIn: UsersTableServiceModule
+	providedIn: UsersServiceModule
 })
-export class UsersTableService {
+export class UsersService {
 	public foundUsersBS: BehaviorSubject<GithubUser[]> = new BehaviorSubject([]);
 
 	get foundUsers(): Observable<GithubUser[]> {
