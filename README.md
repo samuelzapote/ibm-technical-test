@@ -1,5 +1,3 @@
-# Github User Search
-
 ## Getting Started
 
 Setup node and npm with [nvm-windows](https://github.com/coreybutler/nvm-windows) for windows or [nvm](https://github.com/nvm-sh/nvm) for Linux / MacOS systems.
