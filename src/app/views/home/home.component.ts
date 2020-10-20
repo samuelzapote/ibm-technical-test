@@ -21,6 +21,9 @@ interface PageChangeEvent {
 	previousPageIndex: number;
 }
 
+interface GithubError {
+	statusText: string;
+}
 
 const COLUMNS_REG: TableColumn[] = [
 	{ label: 'Name', name: 'name' },
@@ -43,6 +46,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 	public dataSource: MatTableDataSource<GithubUser> = new MatTableDataSource();
 	public searching = false;
 	public searchError = '';
+	private rateLimitExceeded = false;
 	private foundUsersSubscription: Subscription;
 
 	constructor(private usersService: UsersService, private snackBar: MatSnackBar, private router: Router) {
@@ -61,13 +65,16 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 	}
 
 	public async onUserSearch(query: string): Promise<void> {
-		this.searching = true;
-		this.usersService.searchUsersAndAdd(query)
-			.then(() => { this.searching = false; })
-			.catch((error: { statusText: string; }) => {
-				this.searching = false;
-				this.triggerErrorSnackbar(error);
-			});
+		console.log(this.rateLimitExceeded);
+		if (this.rateLimitExceeded) {
+			const customError: GithubError = { statusText: 'rate limit exceeded' };
+			this.triggerErrorSnackbar(customError);
+		} else {
+			this.searching = true;
+			this.usersService.searchUsersAndAdd(query)
+				.then(() => { this.searching = false; })
+				.catch((error: GithubError) => { this.handleGithubError(error); });
+		}
 	}
 
 	public onUserClicked(user: GithubUser): void {
@@ -75,17 +82,20 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 	}
 
 	public onPageChange(e: PageChangeEvent): void {
-		if (this.isOnTheLastPage(e)) {
+		if (this.isOnTheLastPage(e) && !this.rateLimitExceeded) {
 			this.searching = true;
 			this.usersService.handleLastPageLoad()
-				.then(() => {
-					this.searching = false;
-				})
-				.catch((error: { statusText: string; }) => {
-					this.searching = false;
-					this.triggerErrorSnackbar(error);
-				});
+				.then(() => { this.searching = false; })
+				.catch((error: GithubError) => { this.handleGithubError(error); });
 		}
+	}
+
+	private handleGithubError(error: GithubError): void {
+		this.searching = false;
+		if (error.statusText === 'rate limit exceeded') {
+			this.rateLimitExceeded = true;
+		}
+		this.triggerErrorSnackbar(error);
 	}
 
 	private isOnTheLastPage(event: PageChangeEvent): boolean {
@@ -94,7 +104,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 		return isLastPage;
 	}
 
-	private triggerErrorSnackbar(error: { statusText: string; }): void {
+	private triggerErrorSnackbar(error: GithubError): void {
 		this.snackBar.open(
 			`Github API has failed with the following error message: "${error.statusText}"`,
 			'Ok',
