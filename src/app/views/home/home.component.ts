@@ -45,7 +45,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 	public displayedColumns: string[] = this.columnsReg.map(c => c.name);
 	public dataSource: MatTableDataSource<GithubUser> = new MatTableDataSource();
 	public searching = false;
-	public searchError = '';
 	private rateLimitExceeded = false;
 	private foundUsersSubscription: Subscription;
 
@@ -65,7 +64,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 	}
 
 	public async onUserSearch(query: string): Promise<void> {
-		console.log(this.rateLimitExceeded);
 		if (this.rateLimitExceeded) {
 			const customError: GithubError = { statusText: 'rate limit exceeded' };
 			this.triggerErrorSnackbar(customError);
