@@ -22,7 +22,7 @@ export class UserComponent implements OnInit, OnDestroy {
 	public gitStatsFields: ProfileField[];
 	public bioFields: ProfileField[];
 	private defaultAvatarUrl = DEFAULT_AVATAR_URL;
-	private userSubscription: Subscription;
+	private usersSubscription: Subscription;
 
 	constructor(
 		public profileEditDialog: MatDialog,
@@ -30,7 +30,7 @@ export class UserComponent implements OnInit, OnDestroy {
 		private router: Router,
 		private usersService: UsersService) {
 		const uid = +this.route.snapshot.paramMap.get('uid');
-		this.userSubscription = this.usersService.foundUsers
+		this.usersSubscription = this.usersService.foundUsers
 			.subscribe(users => {
 				this.user = users.find(u => u.uid === uid);
 				if (!uid || !this.user) {
@@ -44,7 +44,7 @@ export class UserComponent implements OnInit, OnDestroy {
 	public ngOnInit(): void { }
 
 	public ngOnDestroy(): void {
-		this.userSubscription.unsubscribe();
+		this.usersSubscription.unsubscribe();
 	}
 
 	public getUserAvatarStyle(avatarUrl: string): string {
