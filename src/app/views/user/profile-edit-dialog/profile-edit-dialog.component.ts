@@ -1,5 +1,6 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
+
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { GithubUser } from 'src/app/common/models/github-user.model';
@@ -26,7 +27,7 @@ const PROFILE_FIELDS: ProfileEditField[] = [
 	templateUrl: 'profile-edit-dialog.component.html',
 	styleUrls: ['profile-edit-dialog.component.scss'],
 })
-export class ProfileEditDialogComponent {
+export class ProfileEditDialogComponent implements OnInit {
 	public profileEditForm: FormGroup = new FormGroup({});
 	public profileFields: ProfileEditField[] = PROFILE_FIELDS;
 
@@ -37,5 +38,7 @@ export class ProfileEditDialogComponent {
 			this.profileEditForm.addControl(field.name, new FormControl(user[field.name]));
 		});
 	}
+
+	public ngOnInit(): void { }
 
 }
