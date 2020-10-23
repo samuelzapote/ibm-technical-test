@@ -14,7 +14,7 @@ describe('HomeComponent', () => {
 		await TestBed.configureTestingModule({
 			imports: [ HttpClientTestingModule, MatSnackBarModule, RouterTestingModule ],
 			declarations: [ HomeComponent ],
-			providers: [ ]
+			providers: []
 		})
 		.compileComponents();
 	});

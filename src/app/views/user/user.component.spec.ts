@@ -3,6 +3,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { UsersService } from 'src/app/common/services/users.service';
 import { UserComponent } from './user.component';
@@ -14,7 +15,7 @@ describe('UserComponent', () => {
 
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
-			imports: [ MatDialogModule, RouterTestingModule, HttpClientTestingModule ],
+			imports: [ MatDialogModule, MatSnackBarModule, RouterTestingModule, HttpClientTestingModule ],
 			declarations: [ UserComponent ],
 			providers: [ UsersService ],
 		})
