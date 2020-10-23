@@ -45,9 +45,8 @@ export class GithubService {
 	constructor(private http: HttpClient) { }
 
 	public searchUsers(query: string, page: number): Observable<UsersSearchResult> {
-		if (!query) { console.log('invalid query!'); return; }
+		if (!query) { return; }
 		const url = this.generateUsersSearchByPageUrl(query, page);
-		console.log(`Searching Users Metadata at ${url}`);
 		return this.http.get(url) as Observable<UsersSearchResult>;
 
 	}

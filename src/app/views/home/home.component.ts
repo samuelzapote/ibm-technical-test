@@ -69,7 +69,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
 	public onPageChange(e: PageChangeEvent): void {
 		if (this.isOnTheLastPage(e)) {
-			console.log('ON THE LAST PAGE, STARTING SEARCH');
 			const loadNextPage = true;
 			this.usersService.handleSearchUsersAndAdd(this.currentQuery, loadNextPage);
 		}
