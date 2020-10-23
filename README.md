@@ -16,7 +16,7 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 
 ## About
 
-This tool makes use of Github's public API to allow you to search for github users that match a provided search term. The search result provides you with the first 20 users found and is displayed on a table, at 10 users per page. The pagination tool at the bottom of the table allows you to advance to the next page of 10 users. Once you are on your last page, 20 more users will be loaded and added to your table for you to view.
+This tool makes use of Github's public API to allow you to search for github users that match a provided search term. Start to enter a value in the search field, after 1.5 seconds the result provides you with the first 20 users found and is displayed on a table, at 10 users per page. The pagination tool at the bottom of the table allows you to advance to the next page of 10 users. Once you are on your last page, 20 more users will be loaded and added to your table for you to view.
 
 ## Usage
 
