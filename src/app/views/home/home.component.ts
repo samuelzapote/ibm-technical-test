@@ -2,9 +2,8 @@ import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular
 import { Router } from '@angular/router';
 
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 import { UsersService } from 'src/app/common/services/users.service';
 import { GithubUser } from 'src/app/common/models/github-user.model';
@@ -19,10 +18,6 @@ interface PageChangeEvent {
 	pageIndex: number;
 	pageSize: number;
 	previousPageIndex: number;
-}
-
-interface GithubError {
-	statusText: string;
 }
 
 const COLUMNS_REG: TableColumn[] = [
@@ -44,11 +39,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 	public columnsReg: TableColumn[] = COLUMNS_REG;
 	public displayedColumns: string[] = this.columnsReg.map(c => c.name);
 	public dataSource: MatTableDataSource<GithubUser> = new MatTableDataSource();
-	public searching = false;
-	private rateLimitExceeded = false;
+	public isSearching: Observable<boolean> = this.usersService.isSearchingObservable;
+	private currentQuery: string;
 	private foundUsersSubscription: Subscription;
 
-	constructor(private usersService: UsersService, private snackBar: MatSnackBar, private router: Router) {
+	constructor(private usersService: UsersService, private router: Router) {
 		this.foundUsersSubscription = this.usersService.foundUsersObservable
 			.subscribe(users => { this.dataSource.data = users; });
 	}
@@ -63,16 +58,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 		this.foundUsersSubscription.unsubscribe();
 	}
 
-	public async onUserSearch(query: string): Promise<void> {
-		if (this.rateLimitExceeded) {
-			const customError: GithubError = { statusText: 'rate limit exceeded' };
-			this.triggerErrorSnackbar(customError);
-		} else {
-			this.searching = true;
-			this.usersService.searchUsersAndAdd(query)
-				.then(() => { this.searching = false; })
-				.catch((error: GithubError) => { this.handleGithubError(error); });
-		}
+	public onUserSearch(query: string): void {
+		this.currentQuery = query;
+		this.usersService.handleSearchUsersAndAdd(this.currentQuery);
 	}
 
 	public onUserClicked(user: GithubUser): void {
@@ -80,33 +68,16 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 	}
 
 	public onPageChange(e: PageChangeEvent): void {
-		if (this.isOnTheLastPage(e) && !this.rateLimitExceeded) {
-			this.searching = true;
-			this.usersService.handleLastPageLoad()
-				.then(() => { this.searching = false; })
-				.catch((error: GithubError) => { this.handleGithubError(error); });
+		if (this.isOnTheLastPage(e)) {
+			console.log('ON THE LAST PAGE, STARTING SEARCH');
+			const loadNextPage = true;
+			this.usersService.handleSearchUsersAndAdd(this.currentQuery, loadNextPage);
 		}
-	}
-
-	private handleGithubError(error: GithubError): void {
-		this.searching = false;
-		if (error.statusText === 'rate limit exceeded') {
-			this.rateLimitExceeded = true;
-		}
-		this.triggerErrorSnackbar(error);
 	}
 
 	private isOnTheLastPage(event: PageChangeEvent): boolean {
-		const pages = event.length / event.pageSize;
-		const isLastPage = (event.pageIndex + 1) === pages;
-		return isLastPage;
-	}
-
-	private triggerErrorSnackbar(error: GithubError): void {
-		this.snackBar.open(
-			`Github API has failed with the following error message: "${error.statusText}"`,
-			'Ok',
-			{ duration: 5000, verticalPosition: 'top' },
-		);
+		const lastPage = event.length / event.pageSize;
+		const activePage = (event.pageIndex + 1);
+		return activePage === lastPage;
 	}
 }

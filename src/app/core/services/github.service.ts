@@ -1,23 +1,26 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject } from 'rxjs';
+import { Observable } from 'rxjs';
 
-import { GithubUser } from 'src/app/common/models/github-user.model';
 import { environment } from 'src/environments/environment';
 
-interface PartialUserMetadata {
+export interface PartialUserMetadata {
 	id: number;
 	login: string;
 }
 
-interface UsersSearchResult {
+export interface UsersSearchResult {
 	total_count: number;
 	incomplete_results: boolean;
 	items: PartialUserMetadata[];
 }
 
-interface PartialRawUserData {
+export interface GithubError {
+	statusText: 'rate limit exceeded';
+}
+
+export interface PartialRawUserData {
 	id: number;
 	name: string;
 	login: string;
@@ -38,64 +41,28 @@ const BASE_API_URL = environment.BASE_GITHUB_API_URL;
 })
 export class GithubService {
 	private baseApiUrl: string = BASE_API_URL;
-	private currentPageBehaviorSubject: BehaviorSubject<number> = new BehaviorSubject(1);
-	private currentQueryBehaviorSubject: BehaviorSubject<string> = new BehaviorSubject('');
-
-	get currentPage(): number {
-		return this.currentPageBehaviorSubject.value;
-	}
-
-	get currentQuery(): string {
-		return this.currentQueryBehaviorSubject.value;
-	}
 
 	constructor(private http: HttpClient) { }
 
-	public async searchAndParseUsers(query: string, nextPage?: number): Promise<GithubUser[]> {
-		if (this.currentQuery !== query) {
-			this.currentQueryBehaviorSubject.next(query);
-			this.currentPageBehaviorSubject.next(1);
-		}
-		const url = `${this.baseApiUrl}/search/users?q=${this.currentQuery}&per_page=20&page=${nextPage ? nextPage : this.currentPage}`;
-		const result: UsersSearchResult = await this.http.get(url).toPromise() as UsersSearchResult;
-		let parsedFoundUsers: GithubUser[] = [];
+	public searchUsers(query: string, page: number): Observable<UsersSearchResult> {
+		if (!query) { console.log('invalid query!'); return; }
+		const url = this.generateUsersSearchByPageUrl(query, page);
+		console.log(`Searching Users Metadata at ${url}`);
+		return this.http.get(url) as Observable<UsersSearchResult>;
 
-		parsedFoundUsers = await Promise.all(
-			result.items.map(
-				async meta => {
-					const userData: PartialRawUserData = await this.getUserByUsername(meta.login);
-					const githubUser: GithubUser = {
-						uid: userData.id,
-						name: userData.name,
-						username: userData.login,
-						repos: userData.public_repos,
-						followers: userData.followers,
-						following: userData.following,
-						avatarUrl: userData.avatar_url,
-						location: userData.location,
-						company: userData.company,
-						blog: userData.blog,
-						twitter: userData.twitter,
-					};
-					return githubUser;
-				}
-			)
-		);
-
-		if (nextPage) {
-			this.currentPageBehaviorSubject.next(nextPage);
-		}
-
-		return parsedFoundUsers;
 	}
 
-	public loadNextPageOfUsers(): Promise<GithubUser[]> {
-		const nextPage: number = this.currentPage + 1;
-		return this.searchAndParseUsers(this.currentQuery, nextPage);
+	public getUserByUsername(username: string): Observable<PartialRawUserData> {
+		const url = this.generateUserSearchUrl(username);
+		return this.http.get(url) as Observable<PartialRawUserData>;
 	}
 
-	private getUserByUsername(username: string): Promise<PartialRawUserData> {
-		const url = `${this.baseApiUrl}/users/${username}`;
-		return this.http.get(url).toPromise() as Promise<PartialRawUserData>;
+	private generateUsersSearchByPageUrl(query: string, page: number): string {
+		return `${this.baseApiUrl}/search/users?q=${query}&per_page=20&page=${page}`;
 	}
+
+	private generateUserSearchUrl(username: string): string {
+		return `${this.baseApiUrl}/users/${username}`;
+	}
+
 }

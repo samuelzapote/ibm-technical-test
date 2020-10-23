@@ -1,55 +1,117 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, forkJoin, Observable, Subscription, of, OperatorFunction } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
-import { GithubService } from 'src/app/core/services/github.service';
+import { GithubError, GithubService, PartialRawUserData, UsersSearchResult } from 'src/app/core/services/github.service';
+import { SnackbarService } from 'src/app/core/services/snackbar.service';
 import { GithubUser } from 'src/app/common/models/github-user.model';
 
 @Injectable({
 	providedIn: 'root',
 })
-export class UsersService {
-	private foundUsersBehaviorSubject: BehaviorSubject<GithubUser[]> = new BehaviorSubject([]);
+export class UsersService implements OnDestroy {
+	private _foundUsersBehaviorSubject: BehaviorSubject<GithubUser[]> = new BehaviorSubject([]);
+	private _isSearchingBehaviorSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
+	private githubUsersSearchSubscription: Subscription;
+	private currentPage = 1;
+	private rateLimitExceeded = false;
 
 	get foundUsersObservable(): Observable<GithubUser[]> {
-		return this.foundUsersBehaviorSubject.asObservable();
+		return this._foundUsersBehaviorSubject.asObservable();
 	}
 
-	constructor(private githubService: GithubService) { }
-
-	public async searchUsersAndAdd(query: string): Promise<void> {
-		const githubUsers: GithubUser[] = await this.githubService.searchAndParseUsers(`${query}`);
-		this.foundUsersBehaviorSubject.next(githubUsers);
+	get isSearchingObservable(): Observable<boolean> {
+		return this._isSearchingBehaviorSubject.asObservable();
 	}
 
-	public updateLocalUserData(updatedValues: GithubUser): void {
-		const updatedFoundUsers = this.foundUsersBehaviorSubject.value
+	constructor(private githubService: GithubService, private snackbarService: SnackbarService) { }
+
+	public ngOnDestroy(): void {
+		this.githubUsersSearchSubscription.unsubscribe();
+	}
+
+	public handleSearchUsersAndAdd(query: string, loadNextPage?: boolean): void {
+		this._isSearchingBehaviorSubject.next(true);
+		if (this.rateLimitExceeded) {
+			const customError: GithubError = { statusText: 'rate limit exceeded' };
+			this.handleGithubError(customError);
+			return;
+		} else {
+			const page = loadNextPage ? (this.currentPage + 1) : this.currentPage;
+			this.githubUsersSearchSubscription = this.githubService.searchUsers(`${query}`, page)
+				.subscribe(
+					(result) => {
+						this.currentPage = page;
+						this.compileUsersAndAdd(result, loadNextPage);
+					},
+					(error: GithubError) => {
+						this.handleGithubError(error);
+					},
+				);
+		}
+	}
+
+	public updateLocalUserData(updatedUser: GithubUser): void {
+		const updatedFoundUsers = this._foundUsersBehaviorSubject.value
 			.map(oldUser => {
-				if (oldUser.uid === updatedValues.uid) {
-					const { name, username, repos, followers, following, location, company, blog, twitter } = updatedValues;
-					const newUser: GithubUser = {
-						uid: oldUser.uid,
-						name,
-						username,
-						repos,
-						followers,
-						following,
-						avatarUrl: oldUser.avatarUrl,
-						location,
-						company,
-						blog,
-						twitter,
-					};
-					return newUser;
+				if (oldUser.uid === updatedUser.uid) {
+					const newUser = {...updatedUser};
+					newUser.uid = oldUser.uid;
+					newUser.avatarUrl = oldUser.avatarUrl;
+					return {...newUser};
 				}
 				return oldUser;
 			});
-		this.foundUsersBehaviorSubject.next(updatedFoundUsers);
+		this._foundUsersBehaviorSubject.next(updatedFoundUsers);
 	}
 
-	public async handleLastPageLoad(): Promise<void> {
-		const extraGithubUsers = await this.githubService.loadNextPageOfUsers();
-		const updatedGithubUsers: GithubUser[] = this.foundUsersBehaviorSubject.value.concat(extraGithubUsers);
-		this.foundUsersBehaviorSubject.next(updatedGithubUsers);
+	private compileUsersAndAdd(result: UsersSearchResult, isNextPage?: boolean): void {
+		let compiledUsers: GithubUser[] = [];
+		const usersObservable = forkJoin(result.items.map(userMeta => this.githubService.getUserByUsername(userMeta.login)));
+		usersObservable.pipe(this.catchGithubError())
+			.subscribe({
+				next: (rawUsers: PartialRawUserData[]) => {
+					compiledUsers = this.compileFoundUsers(rawUsers);
+				},
+				complete: () => {
+					if (isNextPage) { compiledUsers = this.addToExistingUsers(compiledUsers); }
+					this._foundUsersBehaviorSubject.next(compiledUsers);
+					this._isSearchingBehaviorSubject.next(false);
+				},
+			});
+	}
+
+	private compileFoundUsers(rawUsers: PartialRawUserData[]): GithubUser[] {
+		return rawUsers.map((rawUser) => {
+			const githubUser: GithubUser = {
+				uid: rawUser.id,
+				name: rawUser.name,
+				username: rawUser.login,
+				repos: rawUser.public_repos,
+				followers: rawUser.followers,
+				following: rawUser.following,
+				avatarUrl: rawUser.avatar_url,
+				location: rawUser.location,
+				company: rawUser.company,
+				blog: rawUser.blog,
+				twitter: rawUser.twitter,
+			};
+			return githubUser;
+		});
+	}
+
+	private addToExistingUsers(newUsers: GithubUser[]): GithubUser[] {
+		return this._foundUsersBehaviorSubject.value.concat([...newUsers]);
+	}
+
+	private catchGithubError(): OperatorFunction<unknown, unknown> {
+		return catchError((error: GithubError) => of(this.handleGithubError(error)));
+	}
+
+	private handleGithubError(error: GithubError): void {
+		this._isSearchingBehaviorSubject.next(false);
+		this.rateLimitExceeded = error.statusText === 'rate limit exceeded';
+		this.snackbarService.triggerErrorSnackbar(error);
 	}
 }
